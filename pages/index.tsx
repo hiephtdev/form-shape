@@ -183,14 +183,14 @@ export default function Home() {
         <div className={`${darkMode ? 'bg-gray-800 shadow-gray-900' : 'bg-white'} shadow-md rounded-lg p-6 mb-8`}>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="privateKeys" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="privateKeys" className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                 Private Keys (one per line)
               </label>
               <div className="flex mb-2">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="mr-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+                  className={`mr-2 px-4 py-2 text-sm ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-md`}
                   disabled={isProcessing}
                 >
                   Upload File
@@ -206,7 +206,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setPrivateKeys('')}
-                  className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md"
+                  className={`px-4 py-2 text-sm ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'} rounded-md`}
                   disabled={isProcessing || !privateKeys}
                 >
                   Clear
@@ -216,7 +216,7 @@ export default function Home() {
                 id="privateKeys"
                 value={privateKeys}
                 onChange={(e) => setPrivateKeys(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 min-h-[150px]"
+                className={`w-full p-3 border ${darkMode ? 'border-gray-600 bg-gray-700 text-gray-200 placeholder-gray-400' : 'border-gray-300 bg-white text-gray-900 placeholder-gray-500'} rounded-md focus:ring-blue-500 focus:border-blue-500 min-h-[150px]`}
                 placeholder="Enter private keys here, one per line, or upload a .txt file"
                 disabled={isProcessing}
               />
@@ -227,8 +227,8 @@ export default function Home() {
               disabled={isProcessing}
               className={`w-full py-3 px-4 rounded-md text-white font-medium ${
                 isProcessing 
-                  ? 'bg-blue-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                  ? `${darkMode ? 'bg-blue-500 opacity-70' : 'bg-blue-400'} cursor-not-allowed` 
+                  : `${darkMode ? 'bg-blue-500 hover:bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`
               }`}
             >
               {isProcessing ? 'Processing...' : 'Start Minting'}
@@ -240,12 +240,12 @@ export default function Home() {
           <div className={`${darkMode ? 'bg-gray-800 shadow-gray-900' : 'bg-white'} shadow-md rounded-lg p-6 mb-8`}>
             <div className="mb-2">
               <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium text-gray-700">Progress</span>
-                <span className="text-sm font-medium text-gray-700">
+                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Progress</span>
+                <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   {progress.current} / {progress.total} ({Math.round((progress.current / progress.total) * 100)}%)
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className={`w-full ${darkMode ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2.5`}>
                 <div 
                   className="bg-blue-600 h-2.5 rounded-full" 
                   style={{ width: `${Math.round((progress.current / progress.total) * 100)}%` }}
@@ -253,17 +253,17 @@ export default function Home() {
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="bg-gray-50 p-2 rounded">
-                <p className="text-sm text-gray-500">Wallets</p>
+              <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} p-2 rounded`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Wallets</p>
                 <p className="font-bold">{progress.wallets}</p>
               </div>
-              <div className="bg-green-50 p-2 rounded">
-                <p className="text-sm text-gray-500">Success</p>
-                <p className="font-bold text-green-600">{progress.success}</p>
+              <div className={`${darkMode ? 'bg-green-900' : 'bg-green-50'} p-2 rounded`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Success</p>
+                <p className={`font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>{progress.success}</p>
               </div>
-              <div className="bg-red-50 p-2 rounded">
-                <p className="text-sm text-gray-500">Failed</p>
-                <p className="font-bold text-red-600">{progress.failed}</p>
+              <div className={`${darkMode ? 'bg-red-900' : 'bg-red-50'} p-2 rounded`}>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Failed</p>
+                <p className={`font-bold ${darkMode ? 'text-red-400' : 'text-red-600'}`}>{progress.failed}</p>
               </div>
             </div>
           </div>
