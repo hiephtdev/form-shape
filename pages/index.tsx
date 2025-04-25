@@ -1,5 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import Head from 'next/head';
+import { ethers } from 'ethers';
+
+// Configuration
+const RPC_URL = 'https://shape-mainnet.g.alchemy.com/v2/D3_DfztuA6EjmDawQ4PoZup0EPq5PQ30';
+const NFT_ADDRESS = '0x6b6F66331D99e5691d340EA1924d8EAae151CE6d';
+const CONTRACT_ADDRESS = "0x32953D7ae37B05075b88c34E800aE80C1Cb1B794";
+const CONTRACT_ABI = [
+  'function purchase(address nftAddress, uint256 tokenId, address recipient, uint256 numberToMint, uint256 presaleNumberCanMint, bytes32[] proof)'
+];
+const NUMBER_TO_MINT = 1;
+const PRESALE_NUMBER_CAN_MINT = 0;
+const PROOF: string[] = [];
+const PRICE = ethers.parseEther("0.0009");
 
 export default function Home() {
   const [privateKeys, setPrivateKeys] = useState('');
@@ -56,7 +69,10 @@ export default function Home() {
       .filter(key => key.length > 0 && !key.startsWith('#'));
     
     // Basic validation - check if keys look like hex strings
-    const invalidKeys = keys.filter(key => !key.match(/^0x[0-9a-fA-F]{64}$/));
+    const invalidKeys = keys.filter(key => {
+      // Private key EVM phải có đúng 64 ký tự hex, không có tiền tố 0x
+      return !key.match(/^[0-9a-fA-F]{64}$/);
+    });
     if (invalidKeys.length > 0) {
       setLogs(prev => [
         ...prev, 
@@ -79,56 +95,81 @@ export default function Home() {
     });
 
     try {
-      // Call API endpoint to process minting
-      const response = await fetch('/api/mint', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ privateKeys: keys }),
-      });
+      // Xử lý client-side
+      let currentProgress = 0;
+      
+      // Khởi tạo provider
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
 
-      if (!response.ok) {
-        throw new Error('API request failed');
-      }
-
-      // This is a streaming response for real-time updates
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('Failed to get response reader');
-
-      const decoder = new TextDecoder();
-      let done = false;
-
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
+      for (let i = 0; i < keys.length; i++) {
+        const privateKey = keys[i];
+        setLogs(prev => [...prev, `🔑 Processing wallet ${i+1}/${keys.length}...`]);
         
-        if (value) {
-          const text = decoder.decode(value);
-          // Split by new line since we're sending JSON objects one per line
-          const events = text.split('\n').filter(line => line.trim() !== '');
+        try {
+          // Tạo wallet từ private key
+          const wallet = new ethers.Wallet(privateKey, provider);
+          const address = await wallet.getAddress();
+          setLogs(prev => [...prev, `👛 Wallet address: ${address.substring(0, 6)}...${address.substring(address.length - 4)}`]);
           
-          for (const eventText of events) {
+          // Khởi tạo contract instance với wallet đã ký
+          const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
+          
+          // Xử lý mint cho 4 tokenId
+          for (let tokenId = 1; tokenId <= 4; tokenId++) {
             try {
-              const event = JSON.parse(eventText);
+              setLogs(prev => [...prev, `🔄 Minting tokenId ${tokenId} with wallet ${i+1}...`]);
               
-              if (event.type === 'log') {
-                setLogs(logs => [...logs, event.message]);
-              } else if (event.type === 'progress') {
-                setProgress(prev => ({
-                  ...prev,
-                  current: event.current,
-                  success: event.success || prev.success,
-                  failed: event.failed || prev.failed
-                }));
-              }
-            } catch (e) {
-              // In case of malformed JSON
-              setLogs(logs => [...logs, eventText]);
+              // Gọi hàm purchase trên contract
+              const tx = await contract.purchase(
+                NFT_ADDRESS,
+                tokenId,
+                address,
+                NUMBER_TO_MINT,
+                PRESALE_NUMBER_CAN_MINT,
+                PROOF,
+                { value: PRICE }
+              );
+              
+              setLogs(prev => [...prev, `📝 Transaction sent: ${tx.hash.substring(0, 10)}...`]);
+              
+              // Đợi transaction được xác nhận
+              const receipt = await tx.wait();
+              
+              currentProgress++;
+              // Transaction thành công
+              setProgress(prev => ({
+                ...prev,
+                current: currentProgress,
+                success: prev.success + 1
+              }));
+              setLogs(prev => [...prev, `✅ Minted tokenId ${tokenId} with wallet ${i+1}`]);
+            } catch (error) {
+              currentProgress++;
+              setProgress(prev => ({
+                ...prev,
+                current: currentProgress,
+                failed: prev.failed + 1
+              }));
+              const errorMessage = error instanceof Error ? error.message : String(error);
+              setLogs(prev => [...prev, `❌ Failed to mint tokenId ${tokenId} with wallet ${i+1}: ${errorMessage}`]);
             }
           }
+        } catch (error) {
+          // Lỗi khi khởi tạo ví hoặc contract
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          setLogs(prev => [...prev, `❌ Error with wallet ${i+1}: ${errorMessage}`]);
+          
+          // Cập nhật tiến trình cho 4 TokenID bị bỏ qua
+          currentProgress += 4;
+          setProgress(prev => ({
+            ...prev,
+            current: currentProgress,
+            failed: prev.failed + 4
+          }));
         }
       }
+      
+      setLogs(prev => [...prev, "✅ Processing completed"]);
     } catch (error) {
       setLogs(prev => [...prev, `❌ Error: ${error instanceof Error ? error.message : String(error)}`]);
     } finally {
