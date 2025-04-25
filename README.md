@@ -1,26 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Form Shape - NFT Minting Tool
+
+A Next.js web application for minting NFTs on the Shape network using a list of private keys.
+
+## Features
+
+- Simple and user-friendly interface
+- Batch processing of multiple wallets
+- Real-time progress tracking and logging
+- Secure client-side processing of private keys
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 14.x or higher
+- npm or yarn
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd form-shape
+   ```
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+3. Create a `.env.local` file with your configuration:
+   ```
+   RPC_URL=https://shape-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+   NFT_ADDRESS=0x6b6F66331D99e5691d340EA1924d8EAae151CE6d
+   CONTRACT_ADDRESS=0x32953D7ae37B05075b88c34E800aE80C1Cb1B794
+   PRICE=0.0009
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Usage
+
+1. Enter your private keys in the text area, one per line.
+2. Click "Start Minting" to begin the process.
+3. Monitor the progress and results in the logs section.
+
+## Security Notes
+
+- Private keys are processed directly in your browser and are never stored on any server.
+- For maximum security, consider running this application locally.
+- Never share your private keys with untrusted sources.
+
+## Configuration
+
+You can modify the following settings in the `.env.local` file:
+
+- `RPC_URL`: The RPC endpoint for the Shape network
+- `NFT_ADDRESS`: The address of the NFT contract
+- `CONTRACT_ADDRESS`: The address of the purchase contract
+- `PRICE`: The price to mint each NFT in ETH
 
 This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
